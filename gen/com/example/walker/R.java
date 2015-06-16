@@ -1767,15 +1767,17 @@ containing a value of this type.
         public static final int activity_main=0x7f030017;
         public static final int activity_outdoor=0x7f030018;
         public static final int activity_setting=0x7f030019;
-        public static final int fragment_main=0x7f03001a;
-        public static final int fragment_navigation_drawer=0x7f03001b;
-        public static final int support_simple_spinner_dropdown_item=0x7f03001c;
+        public static final int activity_step_count=0x7f03001a;
+        public static final int fragment_main=0x7f03001b;
+        public static final int fragment_navigation_drawer=0x7f03001c;
+        public static final int support_simple_spinner_dropdown_item=0x7f03001d;
     }
     public static final class menu {
         public static final int global=0x7f0c0000;
         public static final int main=0x7f0c0001;
         public static final int outdoor=0x7f0c0002;
         public static final int setting=0x7f0c0003;
+        public static final int step_count=0x7f0c0004;
     }
     public static final class string {
         /**  Content description for the action bar "home" affordance. [CHAR LIMIT=NONE] 
@@ -1837,11 +1839,13 @@ containing a value of this type.
         public static final int action_example=0x7f0a001a;
         public static final int action_settings=0x7f0a001b;
         public static final int app_name=0x7f0a0010;
+        public static final int hello_jiaxun=0x7f0a001e;
         public static final int hello_world=0x7f0a001d;
         public static final int navigation_drawer_close=0x7f0a0019;
         public static final int navigation_drawer_open=0x7f0a0018;
-        public static final int title_activity_outdoor=0x7f0a001e;
+        public static final int title_activity_outdoor=0x7f0a001f;
         public static final int title_activity_setting=0x7f0a001c;
+        public static final int title_activity_step_count=0x7f0a0020;
         public static final int title_section1=0x7f0a0011;
         public static final int title_section2=0x7f0a0012;
         public static final int title_section3=0x7f0a0013;

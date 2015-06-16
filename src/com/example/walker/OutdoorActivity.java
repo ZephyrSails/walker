@@ -18,6 +18,10 @@ import com.baidu.mapapi.model.LatLng;
 
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -34,11 +38,14 @@ public class OutdoorActivity extends ActionBarActivity implements
 	// 百度地图相关
 	private LocationClient mLocationClient = null;
 	private BDLocationListener myListener = new MyLocationListener();
-	private LocationMode mCurrentMode = LocationMode.NORMAL;
+	private LocationMode mCurrentMode = null;
 	private BitmapDescriptor mCurrentMarker;
 	
 	private MapView mMapView = null;
 	private BaiduMap mBaiduMap = null;
+	
+	private MyLocationData locData;
+	private float locDirection = 0;
 	
 	private boolean isFirstLoc = true;
 	//private CurrentMaker mCurrentMarker
@@ -52,8 +59,16 @@ public class OutdoorActivity extends ActionBarActivity implements
 		// 注意该方法要再setContentView方法之前实现
 		SDKInitializer.initialize(getApplicationContext());
 		setContentView(R.layout.activity_outdoor);
+		
 		mMapView = (MapView) findViewById(R.id.bmapView);
 		mBaiduMap = mMapView.getMap();
+		// 设置定位模式为普通
+		mCurrentMode = LocationMode.NORMAL;
+		// 设置指针类型为默认箭头
+		mCurrentMarker = null;
+		// 应用定位模式与指针类型的设置
+		mBaiduMap.setMyLocationConfigeration(new MyLocationConfiguration(
+				mCurrentMode, true, mCurrentMarker));
 		
 	    // 开启定位图层  
 	    mBaiduMap.setMyLocationEnabled(true);
@@ -61,10 +76,51 @@ public class OutdoorActivity extends ActionBarActivity implements
 	    mLocationClient = new LocationClient(getApplicationContext());	//声明LocationClient类
 	    mLocationClient.registerLocationListener(myListener);	//注册监听函数
 	    LocationClientOption option = new LocationClientOption();
-	    option.setOpenGps(true);
-	    option.setCoorType("bd09ll");
-	    option.setScanSpan(1000);
+	    	option.setOpenGps(true);
+	    	option.setCoorType("bd09ll");
+	    	option.setScanSpan(1000);
+	    	option.setNeedDeviceDirect(true);
 	    mLocationClient.setLocOption(option);
+	    
+	 // 传感器管理器  
+        SensorManager sm = (SensorManager) getSystemService(SENSOR_SERVICE);
+        // 注册传感器(Sensor.TYPE_ORIENTATION(方向传感器);SENSOR_DELAY_FASTEST(0毫秒延迟);  
+        // SENSOR_DELAY_GAME(20,000毫秒延迟)、SENSOR_DELAY_UI(60,000毫秒延迟))  
+        sm.registerListener(new SensorEventListener() {
+                // 用于传感器监听中，设置灵敏程度
+                int mIncrement;
+
+                @Override
+                public void onSensorChanged(SensorEvent event) {
+                        // 方向传感器
+                        if (event.sensor.getType() == Sensor.TYPE_ORIENTATION) {
+                                // x表示手机指向的方位，0表示北,90表示东，180表示南，270表示西
+                                float x = event.values[SensorManager.DATA_X];
+                                // Log.e("x",x+"");
+                                mIncrement++;
+                                if (mIncrement == 10) {
+                                        // 修改定位图标方向
+                                        locDirection = x;
+                                        //  重新设置当前位置数据
+                                        // mBaiduMap.setMyLocationData(locData);
+                                        //myLocationOverlay.setData(locData);
+                                        //mMapView.refresh();
+
+                                        mIncrement = 0;
+                                        Log.i("direction", ""+locDirection);
+                                }
+                        }
+                }
+
+				@Override
+				public void onAccuracyChanged(Sensor sensor, int accuracy) {
+					// TODO Auto-generated method stub
+					
+				}
+
+        }, sm.getDefaultSensor(Sensor.TYPE_ORIENTATION),
+                        SensorManager.SENSOR_DELAY_NORMAL);
+	    
 	    mLocationClient.start();
 
 		mNavigationDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager()
@@ -116,6 +172,8 @@ public class OutdoorActivity extends ActionBarActivity implements
 			sb.append(location.getLongitude());
 			sb.append("\nradius : ");
 			sb.append(location.getRadius());
+			sb.append("\ndirection : ");
+			sb.append(location.getDirection());
 			if (location.getLocType() == BDLocation.TypeGpsLocation){
 				sb.append("\nspeed : ");
 				sb.append(location.getSpeed());
@@ -127,9 +185,9 @@ public class OutdoorActivity extends ActionBarActivity implements
 			}
 			Log.i ("BDmap", sb.toString());
 			
-			MyLocationData locData = new MyLocationData.Builder()
+			locData = new MyLocationData.Builder()
 					.accuracy(location.getRadius())
-					.direction(100).latitude(location.getLatitude())
+					.direction(locDirection).latitude(location.getLatitude())
 					.longitude(location.getLongitude()).build();
 			mBaiduMap.setMyLocationData(locData);
 			if (isFirstLoc) {
@@ -145,23 +203,26 @@ public class OutdoorActivity extends ActionBarActivity implements
 	}
 	@Override
 	protected void onDestroy() {
-		super.onDestroy();
 		// 在activity执行onDestroy时执行mMapView.onDestroy()，实现地图生命周期管理
+		mLocationClient.stop();
+		mBaiduMap.setMyLocationEnabled(false);
 		mMapView.onDestroy();
+		mMapView = null;
+		super.onDestroy();
 	}
 
 	@Override
 	protected void onResume() {
-		super.onResume();
 		// 在activity执行onResume时执行mMapView. onResume ()，实现地图生命周期管理
 		mMapView.onResume();
+		super.onResume();
 	}
 
 	@Override
 	protected void onPause() {
-		super.onPause();
 		// 在activity执行onPause时执行mMapView. onPause ()，实现地图生命周期管理
 		mMapView.onPause();
+		super.onPause();
 	}
 
 }

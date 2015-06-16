@@ -107,6 +107,9 @@ public class NavigationDrawerFragment extends Fragment {
 						selectItem(position);
 						Intent act_intent;
 						switch(position) {
+							case 0:
+								act_intent = new Intent(getActivity(), StepCountActivity.class);
+								break;
 							case 3:
 								act_intent = new Intent(getActivity(), OutdoorActivity.class);
 								break;
